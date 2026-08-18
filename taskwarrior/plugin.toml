@@ -1,0 +1,57 @@
+# Taskwarrior — a pending-task list on the bar, backed by the `task` CLI.
+# Click the glyph to toggle a panel that lists pending tasks, adds, edits,
+# completes, and deletes them through Taskwarrior. The bar widget polls
+# `task status:pending export` every two seconds.
+id = "lpzchr/taskwarrior"
+name = "Taskwarrior"
+version = "0.1.0"
+plugin_api = 22
+author = "lpzchr"
+license = "MIT"
+dependencies = []
+tags = ["bar", "panel", "productivity"]
+icon = "checklist"
+description = "A Taskwarrior-backed task list with a bar widget and editable panel."
+
+# Plugin-level settings: which task binary, rc file, and data directory the
+# plugin talks to. Empty rc/data settings inherit Taskwarrior's own defaults
+# (usually ~/.taskrc and its data.location).
+[[setting]]
+key = "task_binary"
+type = "string"
+label_key = "settings.task_binary.label"
+description_key = "settings.task_binary.description"
+default = "task"
+
+[[setting]]
+key = "task_rc"
+type = "file"
+label_key = "settings.task_rc.label"
+description_key = "settings.task_rc.description"
+default = ""
+
+[[setting]]
+key = "task_data_dir"
+type = "folder"
+label_key = "settings.task_data_dir.label"
+description_key = "settings.task_data_dir.description"
+default = ""
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 560
+height = 420
+placement = "attached"
+open_near_click = true
+
+[[widget]]
+id = "todo"
+entry = "todo.luau"
+
+  [[widget.setting]]
+  key = "glyph"
+  type = "glyph"
+  label_key = "settings.glyph.label"
+  description_key = "settings.glyph.description"
+  default = "checklist"

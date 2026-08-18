@@ -1,0 +1,41 @@
+{
+  "empty": "No pending tasks — add one with +",
+  "load_failed": "Could not load tasks from Taskwarrior",
+  "loading": "Loading tasks…",
+  "placeholder": "New task…",
+  "prio_important": "Important",
+  "prio_low": "Low",
+  "prio_medium": "Medium",
+  "prio_none": "No priority",
+  "settings": {
+    "glyph": {
+      "description": "The glyph shown for the Taskwarrior widget on the bar.",
+      "label": "Bar glyph"
+    },
+    "task_binary": {
+      "description": "Command or absolute path of the task CLI. Defaults to task on PATH.",
+      "label": "Task binary"
+    },
+    "task_data_dir": {
+      "description": "Taskwarrior data directory (rc.data.location). Empty uses the directory from the task rc file.",
+      "label": "Task data directory"
+    },
+    "task_rc": {
+      "description": "Taskwarrior rc file (task rc:path). Empty uses Taskwarrior's default ~/.taskrc.",
+      "label": "Task rc file"
+    }
+  },
+  "task_missing": "Taskwarrior CLI not found — install taskwarrior or set the task binary in the plugin settings",
+  "tip_add": "Add a task",
+  "tip_cancel": "Discard",
+  "tip_close": "Close",
+  "tip_commit": "Save (Enter)",
+  "tip_delete": "Delete task",
+  "tip_done": "Complete task",
+  "tip_edit": "Edit",
+  "tip_settings": "Plugin settings",
+  "title": "Taskwarrior",
+  "tooltip": "Taskwarrior — {count} to do",
+  "tooltip_missing": "Taskwarrior — task CLI not found",
+  "tooltip_unavailable": "Taskwarrior — unavailable"
+}
