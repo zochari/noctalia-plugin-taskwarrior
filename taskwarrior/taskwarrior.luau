@@ -19,27 +19,22 @@ local function trim(value)
 	return noctalia.string.trim(value)
 end
 
-local function binary()
-	local configured = noctalia.getConfig("task_binary")
-	if type(configured) == "string" and trim(configured) ~= "" then
-		return trim(configured)
-	end
-	return "task"
-end
-
-taskwarrior.binary = binary
-
 local function cleanConfiguredPath(value)
-	if type(value) ~= "string" or trim(value) == "" then
+	local t = trim(value)
+	if type(value) ~= "string" or t == "" then
 		return nil
 	end
-	return noctalia.expandPath(trim(value))
+	return noctalia.expandPath(t)
+end
+
+local function binary()
+	return cleanConfiguredPath(noctalia.getConfig("task_binary")) or "task"
 end
 
 -- Optional taskwarrior instance overrides, placed immediately after the
 -- binary: `task rc:/path/taskrc rc.data.location=/path/data ...`. Empty
 -- settings produce no override and taskwarrior uses its own defaults.
-function taskwarrior.contextArgs()
+local function contextArgs()
 	local args = {}
 	local rc = cleanConfiguredPath(noctalia.getConfig("task_rc"))
 	if rc ~= nil then
@@ -55,7 +50,7 @@ end
 -- Every command starts with the binary plus the configured context.
 local function baseArgv(tail)
 	local argv = { binary() }
-	for _, arg in ipairs(taskwarrior.contextArgs()) do
+	for _, arg in ipairs(contextArgs()) do
 		table.insert(argv, arg)
 	end
 	for _, arg in ipairs(tail) do
@@ -67,8 +62,8 @@ end
 -- PATH lookup for a bare command name, file existence for a path.
 function taskwarrior.available()
 	local bin = binary()
-	if bin:find("/", 1, true) ~= nil or bin:sub(1, 1) == "~" then
-		return noctalia.fileExists(noctalia.expandPath(bin))
+	if bin:find("/", 1, true) ~= nil then
+		return noctalia.fileExists(bin)
 	end
 	return noctalia.commandExists(bin)
 end
@@ -118,7 +113,7 @@ function taskwarrior.run(argv, cb)
 end
 
 -- Human-readable failure text for an error notification.
-function taskwarrior.describeFailure(result)
+local function describeFailure(result)
 	if type(result) ~= "table" then
 		return "Failed to run task"
 	end
@@ -139,8 +134,18 @@ function taskwarrior.describeFailure(result)
 	return message
 end
 
+function taskwarrior.failureMessage(result)
+	if type(result) == "table" and result.exitCode == 0 and not result.timedOut then
+		return nil
+	end
+	return describeFailure(result)
+end
+local function isValidPriority(value)
+	return value == "H" or value == "M" or value == "L"
+end
+
 local function normalizePriority(value)
-	if value == "H" or value == "M" or value == "L" then
+	if isValidPriority(value) then
 		return value
 	end
 	return ""
@@ -153,11 +158,9 @@ function taskwarrior.parseExport(result)
 	if type(result) ~= "table" then
 		return nil, "task did not return a result"
 	end
-	if result.timedOut then
-		return nil, "task timed out"
-	end
-	if result.exitCode ~= 0 then
-		return nil, taskwarrior.describeFailure(result)
+	local msg = taskwarrior.failureMessage(result)
+	if msg ~= nil then
+		return nil, msg
 	end
 	local raw = type(result.stdout) == "string" and result.stdout or ""
 	local decoded, decodeErr = noctalia.json.decode(raw)
@@ -195,7 +198,7 @@ end
 -- modification.
 function taskwarrior.addArgs(description, priority)
 	local tail = { "add" }
-	if priority == "H" or priority == "M" or priority == "L" then
+	if isValidPriority(priority) then
 		table.insert(tail, "priority:" .. priority)
 	end
 	table.insert(tail, "--")

@@ -56,6 +56,12 @@ local render
 local function tr(key, args)
 	return noctalia.tr(key, args)
 end
+local function notifyFailure(message)
+	if lastNotifiedError ~= message then
+		lastNotifiedError = message
+		noctalia.notifyError(tr("title"), message)
+	end
+end
 
 local function findItem(uuid)
 	for _, item in ipairs(items) do
@@ -116,10 +122,7 @@ local function pump()
 				local tasks, err = taskwarrior.parseExport(result)
 				if err ~= nil then
 					loadError = tr("load_failed")
-					if lastNotifiedError ~= err then
-						lastNotifiedError = err
-						noctalia.notifyError(tr("title"), err)
-					end
+					notifyFailure(err)
 				else
 					items = tasks
 					sortItems()
@@ -134,12 +137,9 @@ local function pump()
 				render()
 			end
 		else
-			if result.exitCode ~= 0 then
-				local message = taskwarrior.describeFailure(result)
-				if lastNotifiedError ~= message then
-					lastNotifiedError = message
-					noctalia.notifyError(tr("title"), message)
-				end
+			local message = taskwarrior.failureMessage(result)
+			if message ~= nil then
+				notifyFailure(message)
 			end
 		end
 		pump()
@@ -202,7 +202,7 @@ local function cyclePriority(uuid)
 	render()
 end
 
-local function completeTask(uuid)
+local function removeTaskAndQueueWrite(uuid, argv)
 	if findItem(uuid) == nil then
 		return
 	end
@@ -211,8 +211,12 @@ local function completeTask(uuid)
 		editingText = ""
 	end
 	removeItem(uuid)
-	queueWrite(taskwarrior.doneArgs(uuid))
+	queueWrite(argv)
 	render()
+end
+
+local function completeTask(uuid)
+	removeTaskAndQueueWrite(uuid, taskwarrior.doneArgs(uuid))
 end
 
 local function deleteTask(uuid)
@@ -222,16 +226,7 @@ local function deleteTask(uuid)
 		render()
 		return
 	end
-	if findItem(uuid) == nil then
-		return
-	end
-	if editingId == uuid then
-		editingId = nil
-		editingText = ""
-	end
-	removeItem(uuid)
-	queueWrite(taskwarrior.deleteArgs(uuid))
-	render()
+	removeTaskAndQueueWrite(uuid, taskwarrior.deleteArgs(uuid))
 end
 
 -- ── UI ───────────────────────────────────────────────────────────────────────
@@ -492,10 +487,7 @@ local function startLoad()
 	if not taskwarrior.available() then
 		loaded = true
 		loadError = noctalia.tr("task_missing")
-		if lastNotifiedError ~= loadError then
-			lastNotifiedError = loadError
-			noctalia.notifyError(tr("title"), loadError)
-		end
+		notifyFailure(loadError)
 	else
 		loaded = false
 		loadError = nil
