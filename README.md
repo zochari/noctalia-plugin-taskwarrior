@@ -117,6 +117,6 @@ mode for luau-lsp.
 
 MIT.
 
-## Acknowledgements
+## References
 
-Inspired by `nightwatch75/todo`.
+`nightwatch75/todo`.
