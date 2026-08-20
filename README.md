@@ -7,9 +7,7 @@ priority (H → M → L → none), completes, and deletes them through the `task
 CLI. The bar glyph's tooltip shows the pending count and refreshes every two
 seconds.
 
-This plugin is a fork of the community `nightwatch75/todo` plugin with its
-JSON-file persistence replaced by a Taskwarrior client. It never writes task
-files itself — every read and write goes through `task`.
+It never writes task files itself — every read and write goes through `task`.
 
 ## Plugin
 
@@ -118,3 +116,7 @@ mode for luau-lsp.
 ## License
 
 MIT.
+
+## Acknowledgements
+
+Inspired by `nightwatch75/todo`.
