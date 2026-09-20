@@ -1,16 +1,37 @@
 {
-  "empty": "No pending tasks — add one with +",
+  "due_date": "{date}",
+  "due_days": "in {count}d",
+  "due_overdue": "overdue",
+  "due_today": "today",
+  "due_tomorrow": "tomorrow",
+  "empty": "Nothing pending — type above to capture a task",
+  "empty_filtered": "No task matches this filter",
+  "filter_all": "All",
+  "filter_placeholder": "Taskwarrior filter, e.g. +next or project:home",
   "load_failed": "Could not load tasks from Taskwarrior",
   "loading": "Loading tasks…",
-  "placeholder": "New task…",
-  "prio_important": "Important",
-  "prio_low": "Low",
-  "prio_medium": "Medium",
-  "prio_none": "No priority",
+  "parsed": "Adds",
+  "placeholder": "Capture a task…",
   "settings": {
+    "default_tags": {
+      "description": "Tags added to a captured task when the typed line names none itself. Comma separated, without the leading +.",
+      "label": "Default tags"
+    },
     "glyph": {
       "description": "The glyph shown for the Taskwarrior widget on the bar.",
       "label": "Bar glyph"
+    },
+    "saved_filters": {
+      "description": "Filter chips offered above the list, comma separated. Each one is a Taskwarrior filter expression such as +next or due.before:tomorrow.",
+      "label": "Saved filters"
+    },
+    "sort_order": {
+      "alpha": "Description (A–Z)",
+      "description": "Order of the task list.",
+      "label": "Sort tasks by",
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "urgency": "Urgency (Taskwarrior score)"
     },
     "task_binary": {
       "description": "Command or absolute path of the task CLI. Defaults to task on PATH.",
@@ -26,16 +47,19 @@
     }
   },
   "task_missing": "Taskwarrior CLI not found — install taskwarrior or set the task binary in the plugin settings",
-  "tip_add": "Add a task",
   "tip_cancel": "Discard",
   "tip_close": "Close",
   "tip_commit": "Save (Enter)",
   "tip_delete": "Delete task",
+  "tip_delete_confirm": "Click again to delete",
   "tip_done": "Complete task",
-  "tip_edit": "Edit",
+  "tip_edit": "Edit description",
+  "tip_filter": "Filter tasks",
   "tip_settings": "Plugin settings",
+  "tip_undo": "Undo the last change",
   "title": "Taskwarrior",
   "tooltip": "Taskwarrior — {count} to do",
   "tooltip_missing": "Taskwarrior — task CLI not found",
-  "tooltip_unavailable": "Taskwarrior — unavailable"
+  "tooltip_unavailable": "Taskwarrior — unavailable",
+  "undo": "Undo"
 }

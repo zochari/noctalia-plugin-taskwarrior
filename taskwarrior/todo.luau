@@ -4,8 +4,8 @@
 -- The glyph is configurable (widget setting). It lights up while the panel is
 -- open (shared "todo_open" state, published by panel.luau) and its tooltip
 -- shows how many tasks are still pending. The count comes from a 2-second
--- `task status:pending export` poll, so it reflects edits made outside
--- noctalia too. Polls never overlap: a slow export just skips a tick.
+-- `task status:pending -WAITING export` poll, so it reflects edits made
+-- outside noctalia too. Polls never overlap: a slow export skips a tick.
 
 local taskwarrior = require("./taskwarrior.luau")
 
@@ -35,7 +35,7 @@ local function poll()
 		return
 	end
 	polling = true
-	taskwarrior.export(function(tasks, err)
+	taskwarrior.export("", function(tasks, err)
 		polling = false
 		if err ~= nil then
 			if not errorNotified then

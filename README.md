@@ -1,6 +1,6 @@
 # Taskwarrior
 
-A [noctalia](https://github.com/noctalia-dev/noctalia) v5 bar plugin backed by [Taskwarrior](https://taskwarrior.org). Click the bar glyph to toggle a panel that lists your **pending** tasks. You can add tasks, edit descriptions, cycle priority (H → M → L → none), complete, or delete them through the `task` CLI. The bar glyph's tooltip shows the pending count and refreshes every two seconds.
+A [noctalia](https://github.com/noctalia-dev/noctalia) v5 bar plugin backed by [Taskwarrior](https://taskwarrior.org). Click the bar glyph to toggle a panel that lists your **pending** tasks. A capture box sits at the top: type a task, press Enter, and it lands in Taskwarrior while the box clears and keeps focus. New tasks are tagged `inbox` by default. Rows show description, project, tags, and due date. You can complete, edit descriptions, filter, or delete tasks through the `task` CLI. The bar glyph's tooltip shows the pending count and refreshes every two seconds.
 
 It never writes task files itself: every read and write goes through `task`.
 
@@ -9,7 +9,7 @@ It never writes task files itself: every read and write goes through `task`.
 | Field | Value |
 | --- | --- |
 | ID | `lpzchr/taskwarrior` |
-| Plugin API | 22 (relative `require()`, compatible with Noctalia 5.0.0-beta.8+, which supports API ≤ 23) |
+| Plugin API | 24 |
 | Entries | Bar widget: `todo`, panel: `panel` |
 
 ## Usage
@@ -23,12 +23,13 @@ noctalia msg panel-toggle lpzchr/taskwarrior:panel
 | Action | Effect |
 | --- | --- |
 | Left click (bar glyph) | Open/close the Taskwarrior panel |
-| **+** (panel header) | Start typing a new task |
-| **Enter**, or ✓ | Commit the edit: `task add` / `task <uuid> modify` |
-| Click the text, or ✎ (pencil) | Edit the task's description |
-| Colour chip (row) | Cycle priority: H → M → L → none → H |
-| ☐ button (row) | Complete the task (`task <uuid> done`, pending-only view, so it leaves the list) |
-| 🗑 button (row) | Permanently delete the task (`task <uuid> delete`, non-interactive) |
+| Type + **Enter** (capture box) | Add the task (`task add`), then clear the box and keep focus |
+| Click the text, or ✎ (hover) | Edit the task's description |
+| ☐ button (row) | Complete the task (`task <uuid> done`; it leaves the pending list) |
+| 🗑 button (hover) | First click arms, second click permanently deletes (`task <uuid> delete`) |
+| **Undo** (panel header) | Revert the most recent complete or delete (`task undo`); visible for a few seconds |
+| Filter chips (panel top) | Apply a saved Taskwarrior filter, configured in the plugin settings |
+| 🔍 button (panel top) | Reveal a filter box that accepts any Taskwarrior filter expression |
 | ⚙ button (panel header) | Open this plugin's page in *Settings → Plugins* |
 
 That settings page also opens from the command line:
@@ -39,22 +40,27 @@ noctalia msg settings-open-plugin lpzchr/taskwarrior
 
 ## Behaviour
 
-- **Pending only.** The panel and bar read `task status:pending export`. Completed and deleted tasks stay in Taskwarrior's history but never appear in the panel.
+- **Taskwarrior syntax in the capture box.** `fix the sink +home project:house.kitchen due:fri` sets the tag, project, and due date, exactly as the CLI would. Chips under the box show the recognised attribute tokens before you commit. Everything else becomes the description verbatim.
 
-- **Refresh policy.** The bar poll updates the pending count every two seconds. The panel refreshes after each in-panel write and on open. Changes made in a terminal while the panel is open appear on the next write or reopen.
+- **Pending only, waiting excluded.** The panel and bar read `task status:pending -WAITING export`. A task you defer with `wait:` disappears from the panel and the bar count until its wait expires.
 
-- **No manual ordering.** Taskwarrior has no user-defined task order. The panel always sorts by priority (H → M → L → none), then description, then UUID. The todo plugin's manual drag-reorder mode is intentionally dropped.
+- **Sorted by urgency by default.** Taskwarrior's computed urgency score decides the order. The settings offer newest-first, oldest-first, and alphabetical instead. Priority is never displayed: the plugin does not read, set, or colour it.
 
-- **Commit-on-submit editing.** Inline edits only reach Taskwarrior when you press **Enter** or ✓. Closing the panel discards an uncommitted edit.
+- **Refresh policy.** The bar poll updates the pending count every two seconds. The panel refreshes after each in-panel write, on open, and when a plugin setting changes. Changes made in a terminal while the panel is open appear on the next write or reopen.
+
+- **Commit-on-submit editing.** Inline edits only reach Taskwarrior when you press **Enter**. Closing the panel discards an uncommitted edit.
 
 - **Serialized writes.** All panel `task` processes run one at a time through a FIFO. Rapid clicks cannot cause writes to race. After writes drain, one `task export` refreshes the list. A failed command shows an error notification and the refresh restores the real state.
 
-- **Descriptions are literal.** The plugin builds commands as argv vectors and POSIX single-quotes each element. It passes them to `runAsync`'s string form, placing `--` before descriptions. Text such as `project:looks-like-attr`, `-leading dash`, `$(rm -rf)` or `'; rm -rf'` is never interpreted by the shell or Taskwarrior.
+- **No shell quoting hazards.** Commands run as argv vectors (`runAsync`'s array form), with `--` before description text. `project:looks-like-attr` typed mid-sentence stays part of the description. Text such as `$(rm -rf)` or `'; rm -rf'` is never interpreted by a shell.
 
 ## Settings
 
 | Setting | What it does |
 | --- | --- |
+| Default tags | Tags added to a captured task when the typed line names none itself. Comma separated; default `inbox`. |
+| Saved filters | Filter chips shown above the list, comma separated Taskwarrior filter expressions. |
+| Sort tasks by | Urgency (default), newest first, oldest first, or description A–Z. |
 | Task binary | Command or absolute path of the `task` CLI. Defaults to `task` on `PATH`. |
 | Task rc file | Alternate Taskwarrior rc file, passed as `task rc:<path>`. Empty uses `~/.taskrc` (or `$XDG_CONFIG_HOME/task/taskrc`). |
 | Task data directory | Data directory passed as `rc.data.location=<dir>`. Empty uses the rc file's `data.location`. Together with **Task rc file** this lets the plugin use an isolated Taskwarrior instance/directory. |
@@ -62,7 +68,7 @@ noctalia msg settings-open-plugin lpzchr/taskwarrior
 
 ## Install
 
-Local development: add this checkout as a path source, then enable the plugin. The `.luau` files hot-reload, and manifest changes need a config reload.
+Local development: add this checkout as a path source, then enable the plugin. The `.luau` files hot-reload, and manifest changes need a plugin disable/enable cycle.
 
 ```sh
 noctalia msg plugins source add dev path /path/to/noctalia-plugin-taskwarrior
@@ -73,9 +79,9 @@ Alternatively copy the `taskwarrior/` directory into `~/.local/share/noctalia/pl
 
 ## Requirements
 
-- noctalia v5 build supporting plugin API 22 (5.0.0-beta.8 or newer). See [Plugin API Versions](https://docs.noctalia.dev/noctalia/plugins/development/plugin-api/)
+- noctalia v5 build supporting plugin API 24. See [Plugin API Versions](https://docs.noctalia.dev/noctalia/plugins/development/plugin-api/)
 
-- Taskwarrior on `PATH` (or set the **Task binary** setting), with a working `task status:pending export`
+- Taskwarrior 3.x on `PATH` (or set the **Task binary** setting), with a working `task export`. Undo needs Taskwarrior 2.4 or newer.
 
 ## Development
 
