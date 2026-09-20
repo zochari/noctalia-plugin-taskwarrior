@@ -10,7 +10,7 @@
   "filter_placeholder": "Taskwarrior filter, e.g. +next or project:home",
   "load_failed": "Could not load tasks from Taskwarrior",
   "loading": "Loading tasks…",
-  "parsed": "Adds",
+  "parsed": "Adds:",
   "placeholder": "Capture a task…",
   "settings": {
     "default_tags": {

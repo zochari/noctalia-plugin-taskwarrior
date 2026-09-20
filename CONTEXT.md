@@ -12,7 +12,7 @@ Writing down a task quickly before it is forgotten. The panel exists for this ab
 _Avoid_: Add, create, insert
 
 **Pending**:
-A task not yet completed or deleted. What the bar count and the list show.
+A task not yet completed or deleted. What the bar count and the list show, minus waiting tasks (see Waiting).
 _Avoid_: Open, active (Taskwarrior uses "active" for a started task)
 
 **Waiting**:
@@ -23,7 +23,7 @@ _Avoid_: Deferred, snoozed
 The score Taskwarrior computes for a task from its attributes. The default sort order. Never editable.
 
 **Priority**:
-The optional H/M/L attribute. Deliberately invisible: the plugin neither displays nor sets it, and must never strip it from tasks that have one.
+The optional H/M/L attribute. Deliberately invisible: the panel never displays it and no panel action sets it, though a capture line may name it like any other attribute (`pri:H`). Never stripped from tasks that have one.
 
 **Project**:
 A task's optional project, possibly dotted into a hierarchy (`home.kitchen`). Read-only in the panel.

@@ -44,7 +44,7 @@ noctalia msg settings-open-plugin lpzchr/taskwarrior
 
 - **Pending only, waiting excluded.** The panel and bar read `task status:pending -WAITING export`. A task you defer with `wait:` disappears from the panel and the bar count until its wait expires.
 
-- **Sorted by urgency by default.** Taskwarrior's computed urgency score decides the order. The settings offer newest-first, oldest-first, and alphabetical instead. Priority is never displayed: the plugin does not read, set, or colour it.
+- **Sorted by urgency by default.** Taskwarrior's computed urgency score decides the order. The settings offer newest-first, oldest-first, and alphabetical instead. Priority is never displayed and no panel action sets it, though a capture line can still name it like any other Taskwarrior attribute.
 
 - **Refresh policy.** The bar poll updates the pending count every two seconds. The panel refreshes after each in-panel write, on open, and when a plugin setting changes. Changes made in a terminal while the panel is open appear on the next write or reopen.
 

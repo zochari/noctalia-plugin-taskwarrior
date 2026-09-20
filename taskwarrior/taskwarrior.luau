@@ -178,7 +178,6 @@ function taskwarrior.parseExport(result)
 				urgency = type(entry.urgency) == "number" and entry.urgency or 0,
 				due = type(entry.due) == "string" and entry.due or "",
 				entry = type(entry.entry) == "string" and entry.entry or "",
-				active = type(entry.start) == "string" and entry.start ~= "",
 				notes = annotationCount(entry.annotations),
 			})
 		end
@@ -249,13 +248,13 @@ local ATTRIBUTES = {
 	due = true,
 	wait = true,
 	scheduled = true,
-	until_ = true,
+	["until"] = true,
 	recur = true,
 	priority = true,
 	pri = true,
 	depends = true,
 	start = true,
-	end_ = true,
+	["end"] = true,
 }
 
 local function isAttribute(token)
@@ -263,14 +262,13 @@ local function isAttribute(token)
 	if name == nil then
 		return false
 	end
-	if name == "until" or name == "end" then
-		return true
-	end
 	return ATTRIBUTES[name] == true
 end
 
+-- Only `+tag` sets a tag on a captured task. A leading minus stays literal,
+-- so a line such as "-mail bob" keeps its first word in the description.
 local function isTag(token)
-	return token:match("^%+[%w_%.%-]+$") ~= nil or token:match("^%-[%w_%.%-]+$") ~= nil
+	return token:match("^%+[%w_%.%-]+$") ~= nil
 end
 
 -- Split a typed line into taskwarrior attributes and literal description
@@ -291,8 +289,8 @@ function taskwarrior.parseCompose(text)
 	return parsed
 end
 
--- `--` tells taskwarrior everything after it is description text, so a task
--- such as "-mail bob" cannot be parsed as a modification.
+-- `--` tells taskwarrior everything after it is description text, so the
+-- words a line leaves behind reach the task verbatim.
 function taskwarrior.addArgs(parsed, defaultTags)
 	local tail = { "add" }
 	local tagged = #parsed.tags > 0

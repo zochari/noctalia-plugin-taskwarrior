@@ -18,7 +18,8 @@
 
 local taskwarrior = require("./taskwarrior.luau")
 
-local TEXT_WIDTH = 348 -- room for the description inside a 560px panel
+local PANEL_WIDTH = 560 -- keep in sync with the [[panel]] width in plugin.toml
+local TEXT_WIDTH = PANEL_WIDTH - 212 -- description room left beside padding and row buttons
 local UNDO_SECONDS = 8
 
 local items = {} -- tasks in display order
@@ -375,8 +376,8 @@ local function glyphButton(key, glyph, tooltip, variant, opacity, onClick, onHov
 		opacity = opacity,
 		tooltip = tooltip,
 		onClick = onClick,
+		onHover = onHover,
 	}
-	spec.onHover = onHover
 	return ui.button(spec)
 end
 local function taskRow(item)
@@ -460,7 +461,7 @@ local function taskRow(item)
 		table.insert(
 			children,
 			glyphButton(
-				"del-" .. uuid .. (armed and "-armed" or ""),
+				"del-" .. uuid,
 				armed and "trash-x" or "trash",
 				armed and tr("tip_delete_confirm") or tr("tip_delete"),
 				armed and "destructive" or "ghost",
@@ -710,10 +711,9 @@ function update()
 end
 
 function onRowHover(state, key)
-	-- Keys are "<part>-<uuid>" with an optional "-armed" suffix on the
--- delete button; uuids contain only hex digits and dashes, so the suffix
--- pattern cannot match a real uuid tail.
-	local uuid = tostring(key):gsub("^%a+%-", ""):gsub("%-armed$", "")
+	-- Every child of a row is keyed "<part>-<uuid>", so stripping the part
+	-- prefix recovers the row this hover belongs to.
+	local uuid = tostring(key):gsub("^%a+%-", "")
 	if state == "true" then
 		if hoveredId == uuid then
 			return
